@@ -34,6 +34,7 @@ Route::middleware(['auth', 'role:waiter'])->prefix('waiter')->name('waiter.')->g
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::post('/orders/{order}/deliver', [OrderController::class, 'markDelivered'])->name('orders.deliver');
 });
 
 // Cooker routes

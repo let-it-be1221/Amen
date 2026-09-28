@@ -183,4 +183,37 @@ class OrderController extends Controller
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Mark an order as Delivered.
+     *
+     * The waiter who originally took the order is responsible for serving it
+     * to the customer and confirming delivery. This is the only role that
+     * can transition an order from "Ready" to "Delivered".
+     */
+    public function markDelivered(Request $request, Order $order)
+    {
+        $this->authorize('deliver', $order);
+
+        if ($order->status !== Order::STATUS_READY) {
+            return back()->withErrors([
+                'error' => 'Only orders in "Ready" status can be marked as delivered.',
+            ]);
+        }
+
+        try {
+            $this->workflow->transition(
+                $order,
+                Order::STATUS_DELIVERED,
+                $request->user(),
+                'Order delivered to customer by ' . $request->user()->name
+            );
+
+            return redirect()
+                ->route('waiter.orders.show', $order)
+                ->with('success', "Order {$order->order_number} marked as delivered. The cashier can now process the payment.");
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
 }
