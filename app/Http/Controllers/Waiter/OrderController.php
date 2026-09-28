@@ -7,7 +7,9 @@ use App\Models\MenuItem;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderStatusHistory;
 use App\Models\RestaurantTable;
+use App\Models\User;
 use App\Services\OrderWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -154,7 +156,16 @@ class OrderController extends Controller
             'payments.cashier',
         ]);
 
-        return view('waiter.orders.show', compact('order'));
+        // Other active waiters that can take over this order
+        $otherWaiters = User::where('role', User::ROLE_WAITER)
+            ->where('id', '!=', $order->waiter_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        $canReassign = $request->user()->can('reassign', $order);
+
+        return view('waiter.orders.show', compact('order', 'otherWaiters', 'canReassign'));
     }
 
     /**
@@ -213,6 +224,63 @@ class OrderController extends Controller
                 ->route('waiter.orders.show', $order)
                 ->with('success', "Order {$order->order_number} marked as delivered. The cashier can now process the payment.");
         } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Reassign an order to another waiter.
+     *
+     * Useful when the original waiter's shift ends but they still have
+     * active orders. The new waiter takes over responsibility for delivering
+     * the order and processing its lifecycle.
+     */
+    public function reassign(Request $request, Order $order)
+    {
+        $this->authorize('reassign', $order);
+
+        $validated = $request->validate([
+            'new_waiter_id' => ['required', 'exists:users,id'],
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $newWaiter = User::find($validated['new_waiter_id']);
+
+        if (!$newWaiter->isWaiter()) {
+            return back()->withErrors(['new_waiter_id' => 'The selected user is not a waiter.']);
+        }
+
+        if ($newWaiter->id === $order->waiter_id) {
+            return back()->withErrors(['new_waiter_id' => 'This waiter already owns the order.']);
+        }
+
+        if (!in_array($order->status, Order::ACTIVE_STATUSES, true)) {
+            return back()->withErrors(['error' => 'Only active orders can be reassigned.']);
+        }
+
+        $originalWaiter = $order->waiter;
+
+        try {
+            DB::transaction(function () use ($order, $newWaiter, $originalWaiter, $request) {
+                $order->update(['waiter_id' => $newWaiter->id]);
+
+                OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'user_id' => $request->user()->id,
+                    'status' => $order->status, // keep the same status
+                    'notes' => sprintf(
+                        'Order reassigned from %s to %s. Reason: %s',
+                        $originalWaiter?->name ?? 'unknown',
+                        $newWaiter->name,
+                        $request->input('reason', 'No reason provided')
+                    ),
+                ]);
+            });
+
+            return redirect()
+                ->route('waiter.orders.show', $order)
+                ->with('success', "Order {$order->order_number} reassigned to {$newWaiter->name}.");
+        } catch (\Throwable $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }

@@ -13,6 +13,8 @@
             ['route' => 'supervisor.dashboard', 'label' => 'Dashboard', 'icon' => 'dashboard'],
             ['route' => 'supervisor.reports', 'label' => 'Reports', 'icon' => 'reports'],
             ['route' => 'supervisor.orders', 'label' => 'All Orders', 'icon' => 'list'],
+            ['route' => 'admin.menu-items.index', 'label' => 'Menu Items', 'icon' => 'menu'],
+            ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => 'tag'],
         ],
         'waiter' => [
             ['route' => 'waiter.dashboard', 'label' => 'Dashboard', 'icon' => 'dashboard'],

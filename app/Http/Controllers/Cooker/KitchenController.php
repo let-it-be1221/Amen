@@ -134,6 +134,7 @@ class KitchenController extends Controller
 
     /**
      * Mark an order as ready (cooking completed).
+     * Sends a database notification to the waiter so they know to pick it up.
      */
     public function markReady(Request $request, Order $order)
     {
@@ -151,9 +152,17 @@ class KitchenController extends Controller
             // Update order items status
             OrderItem::where('order_id', $order->id)->update(['status' => OrderItem::STATUS_READY]);
 
+            // Eager load items so the notification data includes the count
+            $order->load('items', 'table', 'cooker');
+
+            // Notify the waiter who took the order that the food is ready to serve
+            if ($order->waiter) {
+                $order->waiter->notify(new \App\Notifications\OrderReady($order));
+            }
+
             return redirect()
                 ->route('cooker.kitchen')
-                ->with('success', "Order {$order->order_number} marked as ready.");
+                ->with('success', "Order {$order->order_number} marked as ready. The waiter has been notified.");
         } catch (\InvalidArgumentException $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }

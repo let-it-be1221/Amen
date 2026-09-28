@@ -67,6 +67,23 @@ class OrderPolicy
         return false;
     }
 
+    /**
+     * Reassignment: the current owner can hand off to another waiter,
+     * and admins/supervisors can reassign any active order.
+     */
+    public function reassign(User $user, Order $order): bool
+    {
+        if ($user->isAdmin() || $user->isSupervisor()) {
+            return in_array($order->status, Order::ACTIVE_STATUSES, true);
+        }
+
+        if ($user->isWaiter() && $order->waiter_id === $user->id) {
+            return in_array($order->status, Order::ACTIVE_STATUSES, true);
+        }
+
+        return false;
+    }
+
     public function updateStatus(User $user, Order $order): bool
     {
         if ($user->isAdmin()) {
