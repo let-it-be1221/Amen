@@ -130,7 +130,7 @@
                 downloadQr() {
                     const a = document.createElement('a');
                     a.href = this.qrUrl;
-                    a.download = 'amen-menu-qr-v' + this.versionShort + '.png';
+                    a.download = 'amen-menu-qr-v' + this.versionShort + '.svg';
                     a.target = '_blank';
                     document.body.appendChild(a);
                     a.click();

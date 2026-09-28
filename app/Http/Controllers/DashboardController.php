@@ -130,7 +130,7 @@ class DashboardController extends Controller
         // Build the QR code URL for the customer-facing menu page
         $menuVersion = \App\Models\SystemSetting::get('menu_version', 'initial');
         $menuUrl = rtrim(request()->root(), '/') . '/menu?v=' . substr(md5($menuVersion), 0, 8);
-        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' . urlencode($menuUrl);
+        $qrUrl = route('menu.qrcode', ['v' => substr(md5($menuVersion), 0, 8)]);
 
         return view('waiter.dashboard', [
             'myOrders' => Order::where('waiter_id', $user->id)->with(['items', 'table'])->latest()->limit(10)->get(),
