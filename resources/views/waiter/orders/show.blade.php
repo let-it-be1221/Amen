@@ -189,6 +189,42 @@
                     </form>
                 </div>
                 @endif
+
+                @if ($order->status === 'ready')
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl p-6 text-white shadow-lg shadow-emerald-500/20">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        <h3 class="text-sm font-bold">Ready for Delivery!</h3>
+                    </div>
+                    <p class="text-xs text-emerald-50 mb-4">The kitchen has finished preparing this order. Please serve it to the customer and confirm delivery below.</p>
+                    <form action="{{ route('waiter.orders.deliver', $order) }}" method="POST" onsubmit="return confirm('Confirm that this order has been delivered to the customer?')">
+                        @csrf
+                        <button type="submit" class="w-full bg-white text-emerald-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-50 transition-colors">
+                            ✓ Confirm Delivered
+                        </button>
+                    </form>
+                </div>
+                @endif
+
+                @if ($order->status === 'delivered')
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        <p class="text-sm font-medium text-emerald-800">Delivered — awaiting payment</p>
+                    </div>
+                    <p class="text-xs text-emerald-700 mt-1">The cashier has been notified. The customer can pay at the counter.</p>
+                </div>
+                @endif
+
+                @if ($order->status === 'paid')
+                <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15" /></svg>
+                        <p class="text-sm font-medium text-green-800">Paid — order complete</p>
+                    </div>
+                    <p class="text-xs text-green-700 mt-1">This order has been paid and is closed.</p>
+                </div>
+                @endif
             </div>
         </div>
     </div>

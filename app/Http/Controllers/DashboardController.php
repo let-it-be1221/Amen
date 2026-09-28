@@ -121,8 +121,16 @@ class DashboardController extends Controller
 
     private function waiterDashboard(User $user): View
     {
+        $readyForDelivery = Order::where('waiter_id', $user->id)
+            ->where('status', Order::STATUS_READY)
+            ->with(['items.menuItem', 'table', 'cooker'])
+            ->latest('ready_at')
+            ->get();
+
         return view('waiter.dashboard', [
             'myOrders' => Order::where('waiter_id', $user->id)->with(['items', 'table'])->latest()->limit(10)->get(),
+            'readyForDelivery' => $readyForDelivery,
+            'readyCount' => $readyForDelivery->count(),
             'activeOrders' => Order::where('waiter_id', $user->id)->whereIn('status', Order::ACTIVE_STATUSES)->count(),
             'totalOrdersToday' => Order::where('waiter_id', $user->id)->whereDate('created_at', today())->count(),
             'totalRevenue' => (float) Order::where('waiter_id', $user->id)

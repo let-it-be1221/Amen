@@ -26,6 +26,48 @@
             </div>
         </div>
 
+        <!-- Ready for delivery alert -->
+        @if ($readyCount > 0)
+        <div class="bg-white rounded-xl border-2 border-emerald-300 overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold">{{ $readyCount }} order(s) ready for delivery</p>
+                        <p class="text-xs text-emerald-50">The kitchen has finished preparing these. Please serve them to your customers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @foreach ($readyForDelivery as $order)
+                    <div class="p-4 flex items-center justify-between gap-4 hover:bg-slate-50">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="text-sm font-semibold text-slate-900">{{ $order->order_number }}</p>
+                                <span class="text-xs bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full">Ready</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">
+                                {{ $order->items->count() }} item(s) • {{ $order->table?->name ?? 'No table' }}
+                                @if ($order->ready_at) • Ready since {{ $order->ready_at->diffForHumans() }}@endif
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <a href="{{ route('waiter.orders.show', $order) }}" class="text-amber-600 hover:text-amber-700 text-xs font-medium px-3 py-1.5 border border-amber-300 rounded-lg hover:bg-amber-50">View</a>
+                            <form action="{{ route('waiter.orders.deliver', $order) }}" method="POST" onsubmit="return confirm('Confirm that order {{ $order->order_number }} has been delivered to the customer?')">
+                                @csrf
+                                <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg">
+                                    ✓ Mark Delivered
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         <!-- Recent orders -->
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex items-center justify-between">

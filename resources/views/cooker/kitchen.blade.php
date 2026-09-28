@@ -122,13 +122,17 @@
                     <span class="w-2 h-2 rounded-full bg-violet-500"></span>
                     Ready for Delivery ({{ $readyOrders->count() }})
                 </h3>
+                <p class="text-xs text-slate-500 mt-1">These orders have been cooked. The waiter will deliver them to the customer.</p>
             </div>
             <div class="p-4 space-y-3">
                 @foreach ($readyOrders as $order)
                     <div class="flex items-center justify-between bg-violet-50 border border-violet-200 rounded-lg p-3">
                         <div>
                             <p class="text-sm font-medium text-slate-900">{{ $order->order_number }}</p>
-                            <p class="text-xs text-slate-500">{{ $order->waiter?->name }} • Ready since {{ $order->ready_at?->diffForHumans() }}</p>
+                            <p class="text-xs text-slate-500">
+                                Waiter: {{ $order->waiter?->name }}
+                                @if ($order->ready_at) • Ready since {{ $order->ready_at->diffForHumans() }}@endif
+                            </p>
                         </div>
                         <a href="{{ route('cooker.orders.show', $order) }}" class="text-violet-600 hover:text-violet-700 text-xs font-medium">View →</a>
                     </div>

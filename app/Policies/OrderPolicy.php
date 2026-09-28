@@ -48,6 +48,25 @@ class OrderPolicy
         return false;
     }
 
+    /**
+     * Only the waiter who originally took the order can mark it as delivered.
+     * This ensures accountability: the person who took the order from the customer
+     * is the same person who confirms it was actually handed over.
+     * Admins and supervisors can override for special circumstances.
+     */
+    public function deliver(User $user, Order $order): bool
+    {
+        if ($user->isAdmin() || $user->isSupervisor()) {
+            return $order->status === Order::STATUS_READY;
+        }
+
+        if ($user->isWaiter() && $order->waiter_id === $user->id) {
+            return $order->status === Order::STATUS_READY;
+        }
+
+        return false;
+    }
+
     public function updateStatus(User $user, Order $order): bool
     {
         if ($user->isAdmin()) {
