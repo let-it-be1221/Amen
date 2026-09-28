@@ -157,5 +157,7 @@ class DatabaseSeeder extends Seeder
         SystemSetting::set('restaurant_address', 'Bole Road, Addis Ababa, Ethiopia', 'general');
         SystemSetting::set('currency', 'USD', 'general');
         SystemSetting::set('currency_symbol', '$', 'general');
+        // Initial menu version - changes whenever a menu item is added/updated/removed
+        SystemSetting::set('menu_version', 'initial-' . time(), 'menu');
     }
 }

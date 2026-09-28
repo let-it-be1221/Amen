@@ -127,6 +127,11 @@ class DashboardController extends Controller
             ->latest('ready_at')
             ->get();
 
+        // Build the QR code URL for the customer-facing menu page
+        $menuVersion = \App\Models\SystemSetting::get('menu_version', 'initial');
+        $menuUrl = rtrim(request()->root(), '/') . '/menu?v=' . substr(md5($menuVersion), 0, 8);
+        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' . urlencode($menuUrl);
+
         return view('waiter.dashboard', [
             'myOrders' => Order::where('waiter_id', $user->id)->with(['items', 'table'])->latest()->limit(10)->get(),
             'readyForDelivery' => $readyForDelivery,
@@ -139,6 +144,10 @@ class DashboardController extends Controller
                 ->get()
                 ->sum('items_sum_subtotal'),
             'menuItems' => MenuItem::where('is_available', true)->with('category')->limit(6)->get(),
+            'qrUrl' => $qrUrl,
+            'menuUrl' => $menuUrl,
+            'menuVersion' => $menuVersion,
+            'menuVersionShort' => substr(md5($menuVersion), 0, 8),
         ]);
     }
 

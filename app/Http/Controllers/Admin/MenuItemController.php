@@ -66,6 +66,9 @@ class MenuItemController extends Controller
 
         MenuItem::create($validated);
 
+        // Bump menu version - the QR code shown to waiters will be regenerated
+        \App\Models\SystemSetting::set('menu_version', (string) \Illuminate\Support\Str::uuid(), 'menu');
+
         return redirect()
             ->route('admin.menu-items.index')
             ->with('success', "Menu item {$validated['name']} created.");
@@ -106,6 +109,9 @@ class MenuItemController extends Controller
 
         $menuItem->update($validated);
 
+        // Bump menu version
+        \App\Models\SystemSetting::set('menu_version', (string) \Illuminate\Support\Str::uuid(), 'menu');
+
         return redirect()
             ->route('admin.menu-items.index')
             ->with('success', "Menu item {$menuItem->name} updated.");
@@ -118,6 +124,9 @@ class MenuItemController extends Controller
         }
         $menuItem->delete();
 
+        // Bump menu version
+        \App\Models\SystemSetting::set('menu_version', (string) \Illuminate\Support\Str::uuid(), 'menu');
+
         return redirect()
             ->route('admin.menu-items.index')
             ->with('success', "Menu item {$menuItem->name} deleted.");
@@ -126,6 +135,9 @@ class MenuItemController extends Controller
     public function toggleAvailability(MenuItem $menuItem)
     {
         $menuItem->update(['is_available' => !$menuItem->is_available]);
+
+        // Bump menu version - the QR code (which encodes the version) will change
+        \App\Models\SystemSetting::set('menu_version', (string) \Illuminate\Support\Str::uuid(), 'menu');
 
         return back()->with('success', "Menu item {$menuItem->name} is now " . ($menuItem->is_available ? 'available' : 'unavailable') . ".");
     }

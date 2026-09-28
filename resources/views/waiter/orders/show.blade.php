@@ -190,6 +190,27 @@
                 </div>
                 @endif
 
+                @if ($canReassign && $otherWaiters->isNotEmpty())
+                <div class="bg-white rounded-xl border border-blue-200 p-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>
+                        <h3 class="text-sm font-semibold text-blue-700">Reassign Order</h3>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-3">End-of-shift? Hand this order off to another waiter. They will take over delivery and tracking.</p>
+                    <form action="{{ route('waiter.orders.reassign', $order) }}" method="POST" onsubmit="return confirm('Hand this order off to the selected waiter?')">
+                        @csrf
+                        <select name="new_waiter_id" required class="w-full rounded-lg border-slate-300 text-sm focus:border-blue-500 focus:ring-blue-500 mb-2">
+                            <option value="">— Select a waiter —</option>
+                            @foreach ($otherWaiters as $w)
+                                <option value="{{ $w->id }}">{{ $w->name }}@if ($w->phone) — {{ $w->phone }}@endif</option>
+                            @endforeach
+                        </select>
+                        <textarea name="reason" rows="2" class="w-full rounded-lg border-slate-300 text-sm focus:border-blue-500 focus:ring-blue-500 mb-2" placeholder="Reason for handoff (optional)..."></textarea>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Reassign Order</button>
+                    </form>
+                </div>
+                @endif
+
                 @if ($order->status === 'ready')
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl p-6 text-white shadow-lg shadow-emerald-500/20">
                     <div class="flex items-center gap-2 mb-2">
